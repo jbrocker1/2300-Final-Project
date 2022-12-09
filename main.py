@@ -491,6 +491,7 @@ def vendor_menu():
 
 def main():
     clearScreen()
+    insert_item()
     # [('DEPARTMENT',), ('EMERGENCY_CONTACT',), ('EMPLOYEE',), ('ITEM',), ('PRODUCTS',), ('SOLD',), ('TRANSACTION',), ('VENDOR',)]
     
 if __name__ == "__main__":

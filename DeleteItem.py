@@ -25,25 +25,53 @@ def main():
 #Inserts item into DBMS
 def delete_item():
     validInput = False
-
+    IDs = []
     print("---DELETE an Item from Inventory---\n")
     prompt = input("press ENTER to continue or q to quit")
-    if prompt.lower == 'q':
+    if prompt.lower() == 'q':
         return
     clearScreen()
 
+
     view_items()
+
+    #get item ids
+    cursor.execute("select Item_ID from ITEM;")
+    rawOut = cursor.fetchall()
+    for id in rawOut:
+        IDs.append(id[0])
+
+    while not validInput:
+        try:
+            item_id = int(input("\nSelect item to remove based on ID: "))
+            validInput = item_id in IDs
+        except ValueError:
+            print("---Please insert a valid item ID---")
+    clearScreen()
+    view_items(item_id)
+    prompt = input("\nWARNING! Are you sure you want to delete this item? y/n ")
+    if prompt.lower() != 'y':
+        clearScreen()
+        delete_item()
+    clearScreen()
+    cursor.execute(f"delete from ITEM where Item_ID={item_id}")
+    input("Item removed. Press ENTER to continue")
+    clearScreen()
     return
+    
     
         
 
 
 
 
-def view_items():
-    cursor.execute("select * from ITEM")
-    items = cursor.fetchall()
-
+def view_items(id=0):
+    if id == 0:
+        cursor.execute("select * from ITEM")
+        items = cursor.fetchall()
+    else:
+        cursor.execute(f"select * from ITEM where Item_ID={id}")
+        items = cursor.fetchall()
     print("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------")
     print("|  ID  |      Name     |      Brand     |  Location  |   Price ($)  |  Date Aquired  | Tax% | Stock Amount | Profit Per Unit ($) | Department Number | Vendor Company |")
     print("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------")
@@ -84,5 +112,6 @@ if __name__ == '__main__':
                                     host='grocerydatabase.c18yikjkwckw.us-east-2.rds.amazonaws.com', database="ProjectG")
     cursor = cnx.cursor()
     main()
+    cnx.commit()
     cursor.close()
     cnx.close()
