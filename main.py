@@ -170,9 +170,13 @@ def view_employees():
 
     print("----------------------------------------------------------------------------------------------------------------------")
 
-def view_items():
-    cursor.execute("select * from ITEM")
-    items = cursor.fetchall()
+def view_items(item_id = -1):
+    if item_id == -1:
+        cursor.execute("select * from ITEM")
+        items = cursor.fetchall()
+    else:
+        cursor.execute(f"select * from ITEM where Item_ID = {item_id}")
+        items = cursor.fetchall()
 
     print("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------")
     print("|  ID  |      Name     |      Brand     |  Location  |   Price ($)  |  Date Aquired  | Tax% | Stock Amount | Profit Per Unit ($) | Department Number | Vendor Company |")
@@ -299,6 +303,7 @@ def insert_item():
     print(f"Item Department: {DEPT[item_Dep_num-1]}")
     prompt = input("\nIs this information correct? y/n ")
     if prompt.lower() != 'y':
+        clearScreen()
         insert_item()
 
     #Query String
@@ -307,7 +312,51 @@ def insert_item():
     VALUES({item_id},'{item_name}','{item_brand}','Aisle {item_location}',{item_price},'{item_date}',{item_tax},{item_stock},{item_profPer},{item_Dep_num});
     """
     cursor.execute(INSERT_INTO)
-        
+    clearScreen()
+    view_items(item_id)
+    input("\nItem added. Press ENTER to continue...")
+    clearScreen()
+    return
+
+
+#removes item into DBMS
+def delete_item():
+    validInput = False
+    IDs = []
+    #welcome message
+    print("---DELETE an Item from Inventory---\n")
+    prompt = input("press ENTER to continue or q to quit")
+    if prompt.lower() == 'q':
+        return
+    clearScreen()
+    print("---DELETE an Item from Inventory---\n")
+    view_items()
+    #get item ids
+    cursor.execute("select Item_ID from ITEM;")
+    rawOut = cursor.fetchall()
+    for id in rawOut:
+        IDs.append(id[0])
+    #user prompted to select item to delete based on ID 
+    while not validInput:
+        try:
+            item_id = int(input("\nSelect item to remove based on ID: "))
+            validInput = item_id in IDs
+        except ValueError:
+            print("---Please insert a valid item ID---")
+    clearScreen()
+    print("---DELETE an Item from Inventory---\n")
+    view_items(item_id)
+    prompt = input("\nWARNING! Are you sure you want to delete this item? y/n ")
+    if prompt.lower() != 'y':
+        clearScreen()
+        delete_item()
+    clearScreen()
+    print("---DELETE an Item from Inventory---\n")
+    #query to delete the item
+    cursor.execute(f"delete from ITEM where Item_ID={item_id}")
+    input("Item removed. Press ENTER to continue")
+    clearScreen()
+    return     
 def simulate_transactions():
     # getting item information
     cursor.execute("select Item_ID from ITEM")
@@ -491,7 +540,7 @@ def vendor_menu():
 
 def main():
     clearScreen()
-    insert_item()
+
     # [('DEPARTMENT',), ('EMERGENCY_CONTACT',), ('EMPLOYEE',), ('ITEM',), ('PRODUCTS',), ('SOLD',), ('TRANSACTION',), ('VENDOR',)]
     
 if __name__ == "__main__":
