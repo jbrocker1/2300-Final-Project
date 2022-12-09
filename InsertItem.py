@@ -126,11 +126,11 @@ def insert_item():
     #Query String
     INSERT_INTO = f"""
     INSERT into ITEM (Item_ID, Item_Name, Brand, Location, Price, Date_Aqrid, Tax_Percent, Stock_Amount, Prof_Per, Dep_Num)
-    VALUES({item_id},'{item_name}','{item_brand}','Aisle {item_location}',{item_price},'{item_date}',{item_tax},{item_stock},{item_profPer},{item_Dep_num});
+    VALUES({item_id},'{item_name}','{item_brand}','Aisle {item_location}',{f'{item_price:.2f}'},'{item_date}',{item_tax},{item_stock},{f'{item_profPer:.2f}'},{item_Dep_num});
     """
     cursor.execute(INSERT_INTO)
     cursor.close()
-    #connection.commit()
+    connection.commit()
     connection.close()
         
 
