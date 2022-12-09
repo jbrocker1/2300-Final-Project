@@ -21,6 +21,7 @@ cursor.execute(insert_stmt, data)
 select_stmt = "SELECT * FROM employees WHERE emp_no = %(emp_no)s"
 cursor.execute(select_stmt, { 'emp_no': 2 })
 '''
+QUIT = 'q'
 
 def update_department_employee_numbers():
     for i in range(1, 6):
@@ -274,93 +275,116 @@ def simulate_transactions():
         depNum = i + 1
         cursor.execute(f"update DEPARTMENT set Sales={depProfit}+Sales where Number={depNum}")
  
-
-# TODO view vendors and their products
-
-def main():
-    os.system("clear")
-    # [('DEPARTMENT',), ('EMERGENCY_CONTACT',), ('EMPLOYEE',), ('ITEM',), ('PRODUCTS',), ('SOLD',), ('TRANSACTION',), ('VENDOR',)]
-
-    print("Please select a vendor\n")
-
+def vendor_menu():
+    # getting company names from data base
     cursor.execute("select Company from VENDOR")
     vendorCompanys = cursor.fetchall()
     vendorCompanys = [vc[0] for vc in vendorCompanys]
 
-    # TODO input validation
+    # printing prompts along wth list of vendors 
+    print("Please select a vendor\n")
+
     for vCI in range(len(vendorCompanys)):
         print(vCI, ": ",  vendorCompanys[vCI], sep="")
+    print(f"{QUIT}: to quit")
         
-    userVendorIndex = int(input("\nSelect vendor based on number: "))
-    vendorName = vendorCompanys[userVendorIndex]
+    # get and validate user input
+    userVendorIndex = input("\nSelect vendor based on number: ")
 
-    os.system("clear")
-    print("What would you like to know about {}?\n".format(vendorName))
-    print("0: Operational Hours")
-    print("1: Aisle Location")
-    print("2: Sales")
-    print("3: Items Sold")
+    possibleInputs = [str(i) for i in range(len(vendorCompanys))] 
+    possibleInputs.append(QUIT)
 
-    #TODO input validation
-    userVendorSpecificIn = int(input("\nEnter your choice here: "))
-    
-    if userVendorSpecificIn == 0:
-        cursor.execute(f"select OperationHrs from VENDOR where Company='{vendorName}'")
-        operHours = cursor.fetchall()[0][0]
-        print(f"{vendorName}'s Operating hours are {operHours}")
+    while userVendorIndex not in possibleInputs:
+        print("That vendor does not exist. Please try again")
+        userVendorIndex = input("Select vendor based on number: ")
 
-    elif userVendorSpecificIn == 1:
-        cursor.execute(f"select Aisles from VENDOR where Company='{vendorName}'")
-        aisle = cursor.fetchall()[0][0]
-        print(f"{vendorName} items can be found in aisle {aisle}")
-        
-    elif userVendorSpecificIn == 2:
-        cursor.execute(f"select Sales from VENDOR where Company='{vendorName}'")
-        sales = cursor.fetchall()[0][0]
-        print(f"{vendorName} has made ${sales} in sales in total")
+    # loop variable
+    run = False if userVendorIndex == QUIT else True
 
-    elif userVendorSpecificIn == 3:
-        cursor.execute(f"select Item_ID, Item_Name, Brand from ITEM where Vend_Company='{vendorName}'")
-        items = cursor.fetchall()
+    while run:
+        # use the user index input to get the  name of the vendor they wish to look at
+        userVendorIndex = int(userVendorIndex)
+        vendorName = vendorCompanys[userVendorIndex]
+
+        # clear screen and prompt for various actions they can do
         os.system("clear")
-        print(f"The following is a list if items sold by {vendorName}")
-        print("-------------------------------------------")
-        print("|   ID   |    Name    |       Brand       |")
-        print("-------------------------------------------")
+        print("What would you like to know about {}?\n".format(vendorName))
+        print("0: Operational Hours")
+        print("1: Aisle Location")
+        print("2: Sales")
+        print("3: Items Sold")
+        print(f"{QUIT}: Leave menu")
 
-        stringData = [8, 12, 19] 
+        # input validation
+        possibleInputs = ['0', '1', '2', '3', QUIT]
 
-        for item in items:
-            itemData = [item[i] for i in range(len(item))]
-            outputString = '|'
+        userVendorSpecificIn = input("\nEnter your choice here: ")
+        while userVendorSpecificIn not in possibleInputs:
+            print("What you entered was not a viable input")
+            userVendorSpecificIn = input("Enter your choice here: ")
+        
+        # switch cases for possible inputs
+        if userVendorSpecificIn == '0':
+            cursor.execute(f"select OperationHrs from VENDOR where Company='{vendorName}'")
+            operHours = cursor.fetchall()[0][0]
+            print(f"\n{vendorName}'s Operating hours are {operHours}")
 
-
-            for i in range(len(itemData)):
-                idString = str(itemData[i])
-                dataLen = len(idString)
-                aSpaces = stringData[i]
-                numSpaces = aSpaces - dataLen
-
-                if numSpaces < 0:
-                    outputString += idString[:-3] + "..."
-                else:
-                    outputString += idString + (numSpaces * " ")
-
-                outputString += "|"
-
-            print(outputString)
-        print("-------------------------------------------")
+        elif userVendorSpecificIn == '1':
+            cursor.execute(f"select Aisles from VENDOR where Company='{vendorName}'")
+            aisle = cursor.fetchall()[0][0]
+            print(f"\n{vendorName} items can be found in aisle {aisle}")
             
-        contInput = input("\n\npress ENTER to continue\r")
-        while contInput != "":
-            contInput = input("press ENTER to continue\r")
+        elif userVendorSpecificIn == '2':
+            cursor.execute(f"select Sales from VENDOR where Company='{vendorName}'")
+            sales = cursor.fetchall()[0][0]
+            print(f"\n{vendorName} has made ${sales} in sales in total")
 
+        elif userVendorSpecificIn == '3':
+            cursor.execute(f"select Item_ID, Item_Name, Brand from ITEM where Vend_Company='{vendorName}'")
+            items = cursor.fetchall()
+            os.system("clear")
+            print(f"The following is a list if items sold by {vendorName}\n")
+            # formating in order to list the items a vendor sells
+            print("-------------------------------------------")
+            print("|   ID   |    Name    |       Brand       |")
+            print("-------------------------------------------")
 
-    else:
-        print("dumb dumb put some stupid shit")
+            stringData = [8, 12, 19] 
 
-    # TODO loop till quit
+            for item in items:
+                itemData = [item[i] for i in range(len(item))]
+                outputString = '|'
 
+                for i in range(len(itemData)):
+                    idString = str(itemData[i])
+                    dataLen = len(idString)
+                    aSpaces = stringData[i]
+                    numSpaces = aSpaces - dataLen
+
+                    if numSpaces < 0:
+                        outputString += idString[:-3] + "..."
+                    else:
+                        outputString += idString + (numSpaces * " ")
+
+                    outputString += "|"
+
+                print(outputString)
+            print("-------------------------------------------")
+                
+            
+        elif userVendorSpecificIn == QUIT:
+            run = False
+        else:
+            raise ValueError("You entered something weird that we didn't know how to handle")
+
+        # continuation validation input
+        if run:
+            input("\nPress ENTER to continue")
+
+def main():
+    os.system("clear")
+    # [('DEPARTMENT',), ('EMERGENCY_CONTACT',), ('EMPLOYEE',), ('ITEM',), ('PRODUCTS',), ('SOLD',), ('TRANSACTION',), ('VENDOR',)]
+    
 if __name__ == "__main__":
     # initialize connection to data base
     mydb = mysql.connector.connect(
