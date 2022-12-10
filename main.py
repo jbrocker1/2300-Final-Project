@@ -160,7 +160,6 @@ def remove_employee():
 
         input("Press ENTER to continue")
 
-
 def get_employee_id():
     clearScreen()
     print("----Get Employee ID----")
