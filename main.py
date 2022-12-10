@@ -341,8 +341,8 @@ def delete_item():
     #user prompted to select item to delete based on ID 
     while not validInput:
         try:
-            item_id = int(input("\nSelect item to remove based on ID: "))
-            validInput = item_id in IDs
+            item_id = int(input("\nSelect item to remove based on ID: (Vendor items cannot be removed)"))
+            validInput = item_id in IDs and item_id not in (100,101,102,103,104,105,106)
         except ValueError:
             print("---Please insert a valid item ID---")
     clearScreen()
