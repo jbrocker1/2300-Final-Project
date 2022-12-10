@@ -20,7 +20,12 @@ cursor.execute(insert_stmt, data)
 select_stmt = "SELECT * FROM employees WHERE emp_no = %(emp_no)s"
 cursor.execute(select_stmt, { 'emp_no': 2 })
 '''
+
+
 QUIT = 'q'
+
+def clearScreen():
+    print("\033[H\033[J")
 
 def update_department_employee_numbers():
     for i in range(1, 6):
@@ -164,9 +169,13 @@ def view_employees():
 
     print("----------------------------------------------------------------------------------------------------------------------")
 
-def view_items():
-    cursor.execute("select * from ITEM")
-    items = cursor.fetchall()
+def view_items(item_id = -1):
+    if item_id == -1:
+        cursor.execute("select * from ITEM")
+        items = cursor.fetchall()
+    else:
+        cursor.execute(f"select * from ITEM where Item_ID = {item_id}")
+        items = cursor.fetchall()
 
     print("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------")
     print("|  ID  |      Name     |      Brand     |  Location  |   Price ($)  |  Date Aquired  | Tax% | Stock Amount | Profit Per Unit ($) | Department Number | Vendor Company |")
@@ -199,6 +208,154 @@ def view_items():
 
     print("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------")
 
+def insert_item():
+    #Item Attributes
+    DEPT = ("Meat","Bakery","Seafood","Deli","Grocery")
+    item_date = datetime.date.today()
+    item_tax = random.randint(1,4)
+    ValidInput = False
+    item_location = 0
+    item_price = 0.00
+    item_stock = 1
+    item_profPer = 1
+    item_Dep_num = 0
+
+    #Get the most recent item's ID and increase by 1
+    cursor.execute("SELECT * FROM ITEM ORDER BY Item_ID DESC LIMIT 1;")
+    item_id = cursor.fetchone()[0] + 1
+
+    
+
+    #Welcome message for inserting intems
+    print("----Insert Item into Inventory----\n")
+    prompt = input("press ENTER to continue or q to quit ")
+    if prompt.lower() == 'q':
+        return
+    clearScreen()
+    #Enter item's name and brand
+    while not ValidInput:
+        print("----Insert Item into Inventory----\n")
+        item_name = input("Item name: ")
+        item_brand = input("Brand: ")
+        if not item_name.isspace() or not item_brand.isspace():
+            ValidInput = True
+        clearScreen()
+    print("----Insert Item into Inventory----\n")
+    ValidInput = False
+    #Enter item location
+    while not ValidInput:
+        try:
+            item_location = int(input("Item location (Aisle #): "))
+            ValidInput = True
+        except ValueError as e:
+            print("---Please enter a valid NUMBER")
+    clearScreen()
+    print("----Insert Item into Inventory----\n")
+    ValidInput = False
+    #Enter item's price
+    while not ValidInput:
+        try:
+            item_price = float(input("Enter item price: $"))
+            item_profPer = round(item_price%4*.99,2)
+            ValidInput = True
+        except ValueError as e:
+            print("---Please enter a valid NUMBER")
+    clearScreen()
+    print("----Insert Item into Inventory----\n")
+    ValidInput = False
+    #Enter the stock amount
+    while not ValidInput:
+        try:
+            item_stock = int(input("Enter stock amount: "))
+            ValidInput = True
+        except ValueError as e:
+            print("---Please enter a valid NUMBER")
+    clearScreen()
+    print("----Insert Item into Inventory----\n")
+    ValidInput = False
+    #Enter department number for the item
+    while not ValidInput:
+        try:
+            print(f"Which department is in charge of {item_brand} {item_name}?\n")
+            print(" 1 Meat")
+            print(" 2 Bakery")
+            print(" 3 Seafood")
+            print(" 4 Deli")
+            print(" 5 Grocery")
+            item_Dep_num = int(input("Select Department based on number (1-5): "))
+            ValidInput = item_Dep_num in (1,2,3,4,5)
+            clearScreen()
+        except ValueError:
+            print("---Please enter a valid NUMBER")
+            ValidInput = False
+
+    #Confirm
+    print("----Insert Item into Inventory----\n")
+    print(f"Assigned Item ID: {item_id}")
+    print(f"Item name: {item_name}")
+    print(f"Item brand: {item_brand}")
+    print(f"Item Location: Aisle {item_location}")
+    print(f"Item price: ${f'{item_price:.2f}'}")
+    print(f"Date Acquired (Today): {item_date}")
+    print(f"Calculated Tax Percent: {item_tax}%")
+    print(f"Calculated Profit per Item: ${f'{item_profPer:.2f}'}")
+    print(f"Item Department: {DEPT[item_Dep_num-1]}")
+    prompt = input("\nIs this information correct? y/n ")
+    if prompt.lower() != 'y':
+        clearScreen()
+        insert_item()
+
+    #Query String
+    INSERT_INTO = f"""
+    INSERT into ITEM (Item_ID, Item_Name, Brand, Location, Price, Date_Aqrid, Tax_Percent, Stock_Amount, Prof_Per, Dep_Num)
+    VALUES({item_id},'{item_name}','{item_brand}','Aisle {item_location}',{item_price},'{item_date}',{item_tax},{item_stock},{item_profPer},{item_Dep_num});
+    """
+    cursor.execute(INSERT_INTO)
+    clearScreen()
+    view_items(item_id)
+    input("\nItem added. Press ENTER to continue...")
+    clearScreen()
+    return
+
+
+#removes item into DBMS
+def delete_item():
+    validInput = False
+    IDs = []
+    #welcome message
+    print("---DELETE an Item from Inventory---\n")
+    prompt = input("press ENTER to continue or q to quit")
+    if prompt.lower() == 'q':
+        return
+    clearScreen()
+    print("---DELETE an Item from Inventory---\n")
+    view_items()
+    #get item ids
+    cursor.execute("select Item_ID from ITEM;")
+    rawOut = cursor.fetchall()
+    for id in rawOut:
+        IDs.append(id[0])
+    #user prompted to select item to delete based on ID 
+    while not validInput:
+        try:
+            item_id = int(input("\nSelect item to remove based on ID: "))
+            validInput = item_id in IDs
+        except ValueError:
+            print("---Please insert a valid item ID---")
+    clearScreen()
+    print("---DELETE an Item from Inventory---\n")
+    view_items(item_id)
+    prompt = input("\nWARNING! Are you sure you want to delete this item? y/n ")
+    if prompt.lower() != 'y':
+        clearScreen()
+        delete_item()
+    clearScreen()
+    print("---DELETE an Item from Inventory---\n")
+    #query to delete the item
+    cursor.execute(f"delete from ITEM where Item_ID={item_id}")
+    input("Item removed. Press ENTER to continue")
+    clearScreen()
+    return     
 def simulate_transactions():
     # getting item information
     cursor.execute("select Item_ID from ITEM")
@@ -311,7 +468,11 @@ def vendor_menu():
         vendorName = vendorCompanys[userVendorIndex]
 
         # clear screen and prompt for various actions they can do
+<<<<<<< HEAD
         print("\033[H\033[J")
+=======
+        clearScreen()
+>>>>>>> c21cbb27d47674f1136bd77cdbefb336cff440af
         print("What would you like to know about {}?\n".format(vendorName))
         print("0: Operational Hours")
         print("1: Aisle Location")
@@ -346,7 +507,11 @@ def vendor_menu():
         elif userVendorSpecificIn == '3':
             cursor.execute(f"select Item_ID, Item_Name, Brand from ITEM where Vend_Company='{vendorName}'")
             items = cursor.fetchall()
+<<<<<<< HEAD
             print("\033[H\033[J")
+=======
+            clearScreen()
+>>>>>>> c21cbb27d47674f1136bd77cdbefb336cff440af
             print(f"The following is a list if items sold by {vendorName}\n")
             # formating in order to list the items a vendor sells
             print("-------------------------------------------")
@@ -391,7 +556,12 @@ def print_welcome():
     print(displayImage)
 
 def main():
+<<<<<<< HEAD
     print("\033[H\033[J")
+=======
+    clearScreen()
+
+>>>>>>> c21cbb27d47674f1136bd77cdbefb336cff440af
     # [('DEPARTMENT',), ('EMERGENCY_CONTACT',), ('EMPLOYEE',), ('ITEM',), ('PRODUCTS',), ('SOLD',), ('TRANSACTION',), ('VENDOR',)]
     
     # simulate_transactions()
