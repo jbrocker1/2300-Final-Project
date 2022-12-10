@@ -320,7 +320,6 @@ def insert_item():
         clearScreen()
     return
 
-
 #removes item into DBMS
 def delete_item():
     validInput = False
@@ -695,14 +694,76 @@ def print_welcome():
 
     print(displayImage)
 
+def get_transaction_report():
+    cursor.execute("select Date, Store_Profit from TRANSACTION")
+    transactions = cursor.fetchall()
+    
+    currentDate = datetime.date.today()
+    timeDelta = datetime.timedelta(days=1)
+    iterDate = currentDate - (timeDelta * 7)
+
+    profPerDay = []
+    while iterDate < currentDate:
+        dayProfit = 0
+        for transaction in transactions:
+            if transaction[0] == iterDate:
+                dayProfit += transaction[1]
+
+        iterDate += timeDelta
+        profPerDay.append(dayProfit)
+
+
+    clearScreen()
+
+    graphHeight = 28
+    graphWidth = 24
+    graph = [['|' if i == 0 else '-' for i in range(graphWidth)] for j in range(graphHeight)]
+
+    minDayProfit = min(profPerDay)
+    maxDayProfit = max(profPerDay)
+    averageDayProfit = sum(profPerDay) / len(profPerDay)
+    normalizedProfit = [round(((p - minDayProfit) * (graphHeight - 1)) / (maxDayProfit - minDayProfit)) for p in profPerDay]
+
+    print("\nHere are the following statistics for all transasctions over the last week\n")
+    print("Minimum Total Day Profit: ${}".format(round(minDayProfit, 2)))
+    print("Maximun Total Day Profit: ${}".format(round(maxDayProfit, 2)))
+    print("Average Day Profit: ${}".format(round(averageDayProfit, 2)))
+    print()
+
+    xIter = graphWidth // 6
+
+    for col in range(1, graphWidth - xIter):
+        percent = ((col % xIter) / xIter)
+        currentDayIndex = col // xIter
+        if percent != 0:
+            todayProf = normalizedProfit[currentDayIndex]
+            tomorowProf = normalizedProfit[currentDayIndex + 1]
+            currentProf = round(((tomorowProf - todayProf) * percent) + todayProf)
+        else:
+            currentProf = normalizedProfit[currentDayIndex]
+
+        graph[currentProf][col] = '█'
+
+    for row in graph:
+        for col in row:
+            print(col, end='  ')
+        print()
+    for i in range(graphWidth * 3):
+        print('-', end='')
+    print("\n\t\t\tProfit vs Time (Weekly)\n")
+
+    input("press ENTER to continue")
+    return # just for you daniel
+
 def main():
     modify_item()
     clearScreen()
 
     # [('DEPARTMENT',), ('EMERGENCY_CONTACT',), ('EMPLOYEE',), ('ITEM',), ('PRODUCTS',), ('SOLD',), ('TRANSACTION',), ('VENDOR',)]
-    
-    # simulate_transactions()
 
+    get_transaction_report()
+    
+    
 if __name__ == "__main__":
     # initialize connection to data base
     mydb = mysql.connector.connect(
