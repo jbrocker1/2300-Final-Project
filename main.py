@@ -77,7 +77,10 @@ def add_employee():
     cursor.execute(insertStatment, data)
     print(First_Name, Last_Name, "added")
     # incrementing department number employees of this employee by one
-    cursor.execute(f"UPDATE DEPARTMENT SET Num_Employees=Num_Employees-1  WHERE Number={Dep_Num}")
+    cursor.execute(f"UPDATE DEPARTMENT SET Num_Employees=Num_Employees+1  WHERE Number={Dep_Num}")
+    randNames = ("Rachel","Emilee","Ron","Chris","Lauren","Ethan","Daniel","Andrew","Stacie","Bob")
+    phoneNum = f"{random.randint(511,699)}-{random.randint(100,900)}-{random.ranint(2000,9000)}"
+    cursor.execute(f"insert into EMERGENCY_CONTACT (Employee_ID, Emergency_Name, Phone_num, Address) VALUES({ID},'{random.choice(randNames)}','{phoneNum}',123 Spooner Street);")
 
 def remove_employee(ID):
     # get all of the employee ids
@@ -282,7 +285,7 @@ def insert_item():
             print(" 3 Seafood")
             print(" 4 Deli")
             print(" 5 Grocery")
-            item_Dep_num = int(input("Select Department based on number (1-5): "))
+            item_Dep_num = int(input("\nSelect Department based on number (1-5): "))
             ValidInput = item_Dep_num in (1,2,3,4,5)
             clearScreen()
         except ValueError:
@@ -304,17 +307,17 @@ def insert_item():
     if prompt.lower() != 'y':
         clearScreen()
         insert_item()
-
-    #Query String
-    INSERT_INTO = f"""
-    INSERT into ITEM (Item_ID, Item_Name, Brand, Location, Price, Date_Aqrid, Tax_Percent, Stock_Amount, Prof_Per, Dep_Num)
-    VALUES({item_id},'{item_name}','{item_brand}','Aisle {item_location}',{item_price},'{item_date}',{item_tax},{item_stock},{item_profPer},{item_Dep_num});
-    """
-    cursor.execute(INSERT_INTO)
-    clearScreen()
-    view_items(item_id)
-    input("\nItem added. Press ENTER to continue...")
-    clearScreen()
+    else:
+        #Query String
+        INSERT_INTO = f"""
+        INSERT into ITEM (Item_ID, Item_Name, Brand, Location, Price, Date_Aqrid, Tax_Percent, Stock_Amount, Prof_Per, Dep_Num)
+        VALUES({item_id},'{item_name}','{item_brand}','Aisle {item_location}',{item_price},'{item_date}',{item_tax},{item_stock},{item_profPer},{item_Dep_num});
+        """
+        cursor.execute(INSERT_INTO)
+        clearScreen()
+        view_items(item_id)
+        input("\nItem added. Press ENTER to continue...")
+        clearScreen()
     return
 
 
@@ -356,6 +359,151 @@ def delete_item():
     input("Item removed. Press ENTER to continue")
     clearScreen()
     return     
+
+#modifies item in DBMS
+def modify_item():
+    validInput = False
+    IDs = []
+    #welcome message
+    print("---MODIFY an Item from Inventory---\n")
+    prompt = input("press ENTER to continue or q to quit")
+    if prompt.lower() == 'q':
+        return
+    clearScreen()
+    print("---MODIFY an Item from Inventory---\n")
+    view_items()
+    #get item ids
+    cursor.execute("select Item_ID from ITEM;")
+    rawOut = cursor.fetchall()
+    for id in rawOut:
+        IDs.append(id[0])
+    #Select item to be modified
+    while not validInput:
+        try:
+            item_id = int(input("\nSelect item to modify based on ID (Vendor items cannot be modified): "))
+            validInput = item_id in IDs and item_id not in (100,101,102,103,104,105,106,107,108) 
+        except ValueError:
+            print("---Please insert a valid item ID---")
+    
+    #select which attribute to be modified
+    validInput = False
+    while not validInput:
+        try:
+            clearScreen()
+            print("---MODIFY an Item from Inventory---\n")
+            view_items(item_id)
+            print(" 1 Name ")
+            print(" 2 Brand ")
+            print(" 3 Location ")
+            print(" 4 Price ")
+            print(" 5 Stock amount ")
+            print(" 6 Department Number ")
+            prompt = int(input("\nSelect attribute to modify based on number (some attribbutes may not be modified): "))
+            validInput = prompt in (1,2,3,4,5,6)
+        except ValueError:
+            print("---Please insert a valid number---")
+    validInput = False
+    clearScreen()
+    print("---MODIFY an Item from Inventory---\n")
+    if prompt == 1:
+        while not validInput:
+            newName = input("Enter the new name for the item: ")
+            prompt = input(f"Item's name will be changed to {newName}. Is this correct? y/n")
+            clearScreen()
+            if prompt.lower()=='y' and not prompt.isspace():
+                validInput == True
+                cursor.execute(f"UPDATE ITEM set Item_Name='{newName}' where Item_ID = {item_id}")
+                input("Item modified. Press ENTER to continue...")
+                clearScreen()
+
+                
+    elif prompt == 2:
+        while not validInput:
+            newName = input("Enter the new brand for the item: ")
+            prompt = input(f"Item's brand will be changed to {newName}. Is this correct? y/n")
+            clearScreen()
+            if prompt.lower()=='y' and not prompt.isspace():
+                validInput == True
+                cursor.execute(f"UPDATE ITEM set Brand='{newName}' where Item_ID = {item_id};")
+                input("Item modified. Press ENTER to continue...")
+                clearScreen()
+ 
+    elif prompt == 3:
+        while not validInput:
+            try:
+                newAisle = int(input("Enter a new aisle number for the item: "))
+                prompt = input(f"Item's location will be changed to aisle {newAisle}. Is this correct? y/n")
+                clearScreen()
+                if prompt.lower()=='y' and not prompt.isspace():
+                    validInput == True
+                    cursor.execute(f"UPDATE ITEM set Location='Aisle {newAisle}' where Item_ID = {item_id};")
+                    input("Item modified. Press ENTER to continue...")
+                    clearScreen()
+
+            except ValueError:
+                print("Please enter a valid number")
+                clearScreen()
+    elif prompt == 4:
+        while not validInput:
+            try:
+                newPrice = float(input("Enter a new price for the item: $ "))
+                prompt = input(f"Item's location will be changed to aisle {newPrice}. Is this correct? y/n")
+                clearScreen()
+                if prompt.lower()=='y' and not prompt.isspace():
+                    validInput == True
+                    cursor.execute(f"UPDATE ITEM set Price={newPrice} where Item_ID = {item_id};")
+                    cursor.execute(f"UPDATE ITEM set Prof_Per={newPrice%4*.99+1} where Item_ID = {item_id};")
+                    input("Item modified. Press ENTER to continue...")
+                    clearScreen()
+                    
+            except ValueError:
+                print("Please enter a valid number")
+                clearScreen()
+    elif prompt == 5:
+        while not validInput:
+            try:
+                newStock = int(input("Enter a new stock amount for the item: "))
+                prompt = input(f"Item's stock amount will be changed to {newStock}. Is this correct? y/n")
+                clearScreen()
+                if prompt.lower()=='y' and not prompt.isspace():
+                    validInput == True
+                    cursor.execute(f"UPDATE ITEM set Stock_Amount={newStock} where Item_ID = {item_id};")
+                    input("Item modified. Press ENTER to continue...")
+                    clearScreen()
+                    
+            except ValueError:
+                print("Please enter a valid number")
+                clearScreen()
+    elif prompt == 6:
+        while not validInput:
+            try:
+                print(f"Which department would you like to change the item to?\n")
+                print(" 1 Meat")
+                print(" 2 Bakery")
+                print(" 3 Seafood")
+                print(" 4 Deli")
+                print(" 5 Grocery")
+                item_Dep_num = int(input("\nSelect Department based on number (1-5): "))
+                clearScreen()
+                prompt = input(f"Item's department will be changed to {item_Dep_num}. Is this correct? y/n")
+                clearScreen()
+                if prompt.lower()=='y' and not prompt.isspace() and item_Dep_num in (1,2,3,4,5):
+                    validInput == True
+                    cursor.execute(f"UPDATE ITEM set Dep_Num={item_Dep_num} where Item_ID = {item_id};")
+                    input("Item modified. Press ENTER to continue...")
+                    clearScreen()
+            except ValueError:
+                print("---Please enter a valid NUMBER")
+    
+    clearScreen()
+    print("---MODIFY an Item from Inventory---\n")
+    view_items(item_id=item_id)
+    input("\nPress ENTER to continue...")
+    return
+    
+            
+
+
 def simulate_transactions():
     # getting item information
     cursor.execute("select Item_ID from ITEM")
@@ -548,7 +696,7 @@ def print_welcome():
     print(displayImage)
 
 def main():
-
+    modify_item()
     clearScreen()
 
     # [('DEPARTMENT',), ('EMERGENCY_CONTACT',), ('EMPLOYEE',), ('ITEM',), ('PRODUCTS',), ('SOLD',), ('TRANSACTION',), ('VENDOR',)]
@@ -571,7 +719,7 @@ if __name__ == "__main__":
 
     # closing and saving connections and data
     cursor.close()
-    # mydb.commit()
+    #mydb.commit()
     mydb.close()
 
 
