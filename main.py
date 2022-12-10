@@ -1,7 +1,6 @@
 import mysql.connector
 import random
 import datetime
-import os
 
 '''
 insert = "INSERT INTO EMPLOYEE(ID, First_Name, Last_Name, DOB, Address, Dep_Num) VALUES (%s, %s, %s, %s, %s, %s)"
@@ -213,9 +212,14 @@ def simulate_transactions():
     transDate = datetime.date.today()
     timeIterate = datetime.timedelta(days=1)
 
+    for i in range(7):
+        transDate -= timeIterate
+
+    print(transDate)
+
     departmentProfit = [0, 0, 0, 0, 0]
     
-    for transNum in range(2, 100):
+    for transNum in range(110, 200):
         print("working on", transNum)
         # transaction item information
         numItems = random.randint(3, 30)
@@ -307,7 +311,7 @@ def vendor_menu():
         vendorName = vendorCompanys[userVendorIndex]
 
         # clear screen and prompt for various actions they can do
-        os.system("clear")
+        print("\033[H\033[J")
         print("What would you like to know about {}?\n".format(vendorName))
         print("0: Operational Hours")
         print("1: Aisle Location")
@@ -342,7 +346,7 @@ def vendor_menu():
         elif userVendorSpecificIn == '3':
             cursor.execute(f"select Item_ID, Item_Name, Brand from ITEM where Vend_Company='{vendorName}'")
             items = cursor.fetchall()
-            os.system("clear")
+            print("\033[H\033[J")
             print(f"The following is a list if items sold by {vendorName}\n")
             # formating in order to list the items a vendor sells
             print("-------------------------------------------")
@@ -381,10 +385,17 @@ def vendor_menu():
         if run:
             input("\nPress ENTER to continue")
 
+def print_welcome():
+    displayImage = "\n\t██████╗░███████╗██╗░██████╗  ░██████╗░██████╗░░█████╗░░█████╗░███████╗██████╗░██╗░░░██╗\n\t██╔══██╗██╔════╝╚█║██╔════╝  ██╔════╝░██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗╚██╗░██╔╝\n\t██║░░██║█████╗░░░╚╝╚█████╗░  ██║░░██╗░██████╔╝██║░░██║██║░░╚═╝█████╗░░██████╔╝░╚████╔╝░\n\t██║░░██║██╔══╝░░░░░░╚═══██╗  ██║░░╚██╗██╔══██╗██║░░██║██║░░██╗██╔══╝░░██╔══██╗░░╚██╔╝░░\n\t██████╔╝███████╗░░░██████╔╝  ╚██████╔╝██║░░██║╚█████╔╝╚█████╔╝███████╗██║░░██║░░░██║░░░\n\t╚═════╝░╚══════╝░░░╚═════╝░  ░╚═════╝░╚═╝░░╚═╝░╚════╝░░╚════╝░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░\n\n"
+
+    print(displayImage)
+
 def main():
-    os.system("clear")
+    print("\033[H\033[J")
     # [('DEPARTMENT',), ('EMERGENCY_CONTACT',), ('EMPLOYEE',), ('ITEM',), ('PRODUCTS',), ('SOLD',), ('TRANSACTION',), ('VENDOR',)]
     
+    # simulate_transactions()
+
 if __name__ == "__main__":
     # initialize connection to data base
     mydb = mysql.connector.connect(
