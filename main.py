@@ -889,7 +889,7 @@ if __name__ == "__main__":
 
     # closing and saving connections and data
     cursor.close()
-    #mydb.commit()
+    mydb.commit()
     mydb.close()
 
 
