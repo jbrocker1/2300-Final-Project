@@ -895,7 +895,7 @@ if __name__ == "__main__":
     cursor = mydb.cursor()
 
     # running program
-    # main()
+    main()
 
     # closing and saving connections and data
     cursor.close()
