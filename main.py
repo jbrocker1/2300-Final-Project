@@ -211,6 +211,7 @@ def view_items(item_id = -1):
 
     print("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------")
 
+#Insert itme into DBMS
 def insert_item():
     #Item Attributes
     DEPT = ("Meat","Bakery","Seafood","Deli","Grocery")
@@ -232,7 +233,7 @@ def insert_item():
     #Welcome message for inserting intems
     print("----Insert Item into Inventory----\n")
     prompt = input("press ENTER to continue or q to quit ")
-    if prompt.lower() == 'q':
+    if prompt.lower() == QUIT:
         return
     clearScreen()
     #Enter item's name and brand
@@ -327,7 +328,7 @@ def delete_item():
     #welcome message
     print("---DELETE an Item from Inventory---\n")
     prompt = input("press ENTER to continue or q to quit")
-    if prompt.lower() == 'q':
+    if prompt.lower() == QUIT:
         return
     clearScreen()
     print("---DELETE an Item from Inventory---\n")
@@ -367,7 +368,7 @@ def modify_item():
     #welcome message
     print("---MODIFY an Item from Inventory---\n")
     prompt = input("press ENTER to continue or q to quit")
-    if prompt.lower() == 'q':
+    if prompt.lower() == QUIT:
         return
     clearScreen()
     print("---MODIFY an Item from Inventory---\n")
