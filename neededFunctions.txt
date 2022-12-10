@@ -20,3 +20,7 @@ graph of transactions over time per department
 functino for average profit
 how many sales in the last week
 function for min/max sale
+
+fix the thing
+
+add count to items.
