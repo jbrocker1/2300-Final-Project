@@ -468,11 +468,7 @@ def vendor_menu():
         vendorName = vendorCompanys[userVendorIndex]
 
         # clear screen and prompt for various actions they can do
-<<<<<<< HEAD
-        print("\033[H\033[J")
-=======
         clearScreen()
->>>>>>> c21cbb27d47674f1136bd77cdbefb336cff440af
         print("What would you like to know about {}?\n".format(vendorName))
         print("0: Operational Hours")
         print("1: Aisle Location")
@@ -507,11 +503,7 @@ def vendor_menu():
         elif userVendorSpecificIn == '3':
             cursor.execute(f"select Item_ID, Item_Name, Brand from ITEM where Vend_Company='{vendorName}'")
             items = cursor.fetchall()
-<<<<<<< HEAD
-            print("\033[H\033[J")
-=======
             clearScreen()
->>>>>>> c21cbb27d47674f1136bd77cdbefb336cff440af
             print(f"The following is a list if items sold by {vendorName}\n")
             # formating in order to list the items a vendor sells
             print("-------------------------------------------")
@@ -556,12 +548,9 @@ def print_welcome():
     print(displayImage)
 
 def main():
-<<<<<<< HEAD
-    print("\033[H\033[J")
-=======
+
     clearScreen()
 
->>>>>>> c21cbb27d47674f1136bd77cdbefb336cff440af
     # [('DEPARTMENT',), ('EMERGENCY_CONTACT',), ('EMPLOYEE',), ('ITEM',), ('PRODUCTS',), ('SOLD',), ('TRANSACTION',), ('VENDOR',)]
     
     # simulate_transactions()
