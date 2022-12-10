@@ -1,6 +1,14 @@
-import mysql.connector
+import os
+
+# check install of a certain python library
+try:
+    import mysql.connector
+except ImportError:
+    os.system("pip install mysql-connector-python")
+
 import random
 import datetime
+import time
 
 QUIT = 'q'
 
@@ -17,8 +25,7 @@ def update_department_employee_numbers():
 def add_employee():
     clearScreen()
     print("----Adding Employee----\n")
-    print("Are you sure you want to add an employee?")
-    userInput = input("(y/n): ")
+    userInput =input("Are you sure you want to add an employee? (y/n): ")
     if userInput != 'y':
         return
     clearScreen()
@@ -43,9 +50,8 @@ def add_employee():
         depNumber = departmentNumbers[i]
         depName = departmentNames[i]
         print(depNumber[0], ":", depName)
-        print()
 
-    print("Where will", First_Name, Last_Name, "be working? (Department Number)\n")
+    print("\nWhere will", First_Name, Last_Name, "be working? (Department Number)\n")
     # getting employee department number
     Dep_Num = input("Department Number: ")
 
@@ -75,34 +81,53 @@ def add_employee():
         insertStatment = "INSERT INTO EMPLOYEE(ID, First_Name, Last_Name, DOB, Address, Dep_Num) VALUES(%s, %s, %s, %s, %s, %s)"
         data = (ID, First_Name, Last_Name, DOB, Address, Dep_Num)
         cursor.execute(insertStatment, data)
-        print(First_Name, Last_Name, "added")
         # incrementing department number employees of this employee by one
-        cursor.execute(f"UPDATE DEPARTMENT SET Num_Employees=Num_Employees-1  WHERE Number={Dep_Num}")
+        cursor.execute(f"UPDATE DEPARTMENT SET Num_Employees=Num_Employees+1  WHERE Number={Dep_Num}")
+        # adding emergency contact
+        randNames = ("Rachel","Emilee","Ron","Chris","Lauren","Ethan","Daniel","Andrew","Stacie","Bob")
+        phoneNum = f"{random.randint(511,699)}-{random.randint(100,900)}-{random.randint(2000,9000)}"
+        cursor.execute(f"insert into EMERGENCY_CONTACT (Employee_ID, Emergency_Name, Phone_num, Address) VALUES({ID},'{random.choice(randNames)}','{phoneNum}','123 Spooner Street');")
 
-<<<<<<< HEAD
         view_employees(ID)
+        print("\nEmployee Added\n")
         input("Press ENTER to continue")
-=======
-    # adding new employee to the data base
-    insertStatment = "INSERT INTO EMPLOYEE(ID, First_Name, Last_Name, DOB, Address, Dep_Num) VALUES(%s, %s, %s, %s, %s, %s)"
-    data = (ID, First_Name, Last_Name, DOB, Address, Dep_Num)
-    cursor.execute(insertStatment, data)
-    print(First_Name, Last_Name, "added")
-    # incrementing department number employees of this employee by one
-    cursor.execute(f"UPDATE DEPARTMENT SET Num_Employees=Num_Employees+1  WHERE Number={Dep_Num}")
-    randNames = ("Rachel","Emilee","Ron","Chris","Lauren","Ethan","Daniel","Andrew","Stacie","Bob")
-    phoneNum = f"{random.randint(511,699)}-{random.randint(100,900)}-{random.ranint(2000,9000)}"
-    cursor.execute(f"insert into EMERGENCY_CONTACT (Employee_ID, Emergency_Name, Phone_num, Address) VALUES({ID},'{random.choice(randNames)}','{phoneNum}',123 Spooner Street);")
->>>>>>> 65e4032673817f7c90ccf2eadd127d5e6bd96133
 
-def remove_employee(ID):
+def remove_employee():
     # get all of the employee ids
     cursor.execute("SELECT ID FROM EMPLOYEE")
     Ids = cursor.fetchall()
     Ids = [i[0] for i in Ids]
 
-    # if the id is in the list of employee ids then we know its legit
-    if ID in Ids:
+    run = True
+
+    while run:
+        clearScreen()
+        print("----Remove Employees----")
+        checkcont = input("\nWould you like to remove an employee? (y/n): ")
+        if checkcont != "y":
+            return
+
+        validID = False
+        while not validID:
+            clearScreen()
+            print("----Remove Employees----")
+            view_employees(abortContinue=True)
+            print("(or press {} to quit)".format(QUIT))
+            removedID = input("\nEnter Employee ID: ")
+            if removedID == QUIT:
+                return
+            try:
+                ID = int(removedID)
+                if ID in Ids:
+                    validID = True
+                else:
+                    print("This employee doesn't exist")
+                    time.sleep(2)
+            except:
+                print("Not a valid input")
+                time.sleep(2)
+                
+
         # find the department they work for
         cursor.execute(f"SELECT Dep_Num FROM EMPLOYEE WHERE ID={ID}")
         departmentNumber = cursor.fetchall()[0][0]
@@ -115,38 +140,46 @@ def remove_employee(ID):
         cursor.execute(f"select Name from DEPARTMENT where Number={departmentNumber}")
         depName = cursor.fetchall()[0][0]
 
-        # getting the name of the individual
-        cursor.execute(f"select First_Name, Last_Name from EMPLOYEE where ID={ID}")
-        name = cursor.fetchall()[0]
-        name = name[0] + ' ' + name[1]
-
         # if they are the manager print a message and kill the remove request
         if managerID == ID:
             print("You are trying to remove a manager. Update the", depName, "manager then you can remove employee", managerID)
-            return
 
-        # ask the user if they would like to remove an employee
-        userIn = input(f"Are you sure you want to remove {name} ({ID}) from the {depName} department?\n(y/n)")
-        if userIn == "y":
-            # remove the employee and decrement the number of employees from that department
-            cursor.execute(f"DELETE FROM EMPLOYEE WHERE ID={ID}")
-            cursor.execute(f"update DEPARTMENT set Num_Employees=Num_Employees-1 where Number={departmentNumber}")
-            print(f"{name} removed")
         else:
-            print("No action was taken")
+            # ask the user if they would like to remove an employee
+            view_employees(ID)
+            userIn = input("\nAre you sure you would like to remove the above employee? (y/n): ")
+            if userIn == "y":
+                # remove the employee and decrement the number of employees from that department
+                cursor.execute(f"delete from EMERGENCY_CONTACT where Employee_ID={ID}")
+                cursor.execute(f"DELETE FROM EMPLOYEE WHERE ID={ID}")
+                cursor.execute(f"update DEPARTMENT set Num_Employees=Num_Employees-1 where Number={departmentNumber}")
+                print("Employee Removed")
+                run = False
+            else:
+                print("No action was taken")
 
-    else:
-        print(f"{ID} not a valid employee id")
+        input("Press ENTER to continue")
 
-def get_employee_id(fname, lname):
-    try:
-        cursor.execute(f"select ID from EMPLOYEE where First_Name='{fname}' and Last_Name='{lname}'")
-        empid = cursor.fetchall()[0][0]
-        return empid
-    except Exception as e:
-        print(f"{fname} {lname} is an invalid name")
 
-def view_employees(ID=-1):
+def get_employee_id():
+    clearScreen()
+    print("----Get Employee ID----")
+    cont = input("\nWould you like to get an employee ID? (y/n): ")
+    if cont == 'y':
+        clearScreen()
+        print("----Get Employee ID----")
+        fname = input("\nEmployee First Name: ")
+        lname = input("Employee Last Name: ")
+        try:
+            cursor.execute(f"select ID from EMPLOYEE where First_Name='{fname}' and Last_Name='{lname}'")
+            empid = cursor.fetchall()[0][0]
+            print('\n' + fname, lname, "ID:", empid)
+        except Exception as e:
+            print(f"\n{fname} {lname} is an invalid name")
+
+        input("\nPress ENTER to continue")
+
+def view_employees(ID=-1, *, abortContinue=False):
     clearScreen()
 
     print("----Employees---\n")
@@ -192,6 +225,9 @@ def view_employees(ID=-1):
         print(outputString)
 
     print("----------------------------------------------------------------------------------------------------------------------")
+
+    if ID == -1 and not abortContinue:
+        input("Press ENTER to contiue")
 
 def view_items(item_id = -1):
     if item_id == -1:
@@ -347,6 +383,7 @@ def delete_item():
     validInput = False
     IDs = []
     #welcome message
+    clearScreen()
     print("---DELETE an Item from Inventory---\n")
     prompt = input("press ENTER to continue or q to quit")
     if prompt.lower() == QUIT:
@@ -379,7 +416,7 @@ def delete_item():
     cursor.execute(f"delete from ITEM where Item_ID={item_id}")
     input("Item removed. Press ENTER to continue")
     clearScreen()
-    return     
+    return 
 
 #modifies item in DBMS
 def modify_item():
@@ -387,6 +424,7 @@ def modify_item():
     DEPS = ("Meat","Bakery","Seafood","Deli","Grocery")
     IDs = []
     #welcome message
+    clearScreen()
     print("---MODIFY an Item from Inventory---\n")
     prompt = input("press ENTER to continue or q to quit")
     if prompt.lower() == QUIT:
@@ -529,9 +567,6 @@ def modify_item():
     input("\nPress ENTER to continue...")
     return
     
-            
-
-
 def simulate_transactions():
     # getting item information
     cursor.execute("select Item_ID from ITEM")
@@ -785,14 +820,9 @@ def get_transaction_report():
     return # just for you daniel (D)
 
 def main():
-<<<<<<< HEAD
     run = True
     while run:
         clearScreen()
-=======
-    modify_item()
-    clearScreen()
->>>>>>> 65e4032673817f7c90ccf2eadd127d5e6bd96133
 
         print_welcome()
 
@@ -819,32 +849,31 @@ def main():
         if userInput == '0':
             add_employee()
         elif userInput == '1':
-            pass
+            remove_employee()
         elif userInput == '2':
-            pass
+            get_employee_id()
         elif userInput == '3':
             view_employees()
         elif userInput == '4':
             insert_item()
         elif userInput == '5':
-            pass
+            delete_item()
         elif userInput == '6':
-            pass
+            modify_item()
         elif userInput == '7':
-            pass
+            view_items()
         elif userInput == '8':
-            pass
+            vendor_menu()
         elif userInput == '9':
             get_transaction_report()
+        elif userInput == "69":
+            clearScreen()
+            print("\n\n\n\n\t\t███╗░░██╗██╗░█████╗░███████╗\n\t\t████╗░██║██║██╔══██╗██╔════╝\n\t\t██╔██╗██║██║██║░░╚═╝█████╗░░\n\t\t██║╚████║██║██║░░██╗██╔══╝░░\n\t\t██║░╚███║██║╚█████╔╝███████╗\n\t\t╚═╝░░╚══╝╚═╝░╚════╝░╚══════╝\n\n")
+            time.sleep(0.5)
         elif userInput == QUIT:
             print("\nHave a good day!!")
             run = False
 
-<<<<<<< HEAD
-=======
-    
-    
->>>>>>> 65e4032673817f7c90ccf2eadd127d5e6bd96133
 if __name__ == "__main__":
     # initialize connection to data base
     mydb = mysql.connector.connect(
