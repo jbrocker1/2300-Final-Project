@@ -2,26 +2,6 @@ import mysql.connector
 import random
 import datetime
 
-'''
-insert = "INSERT INTO EMPLOYEE(ID, First_Name, Last_Name, DOB, Address, Dep_Num) VALUES (%s, %s, %s, %s, %s, %s)"
-data = (2345, "Jimmys", "Johson", datetime.date(2001, 5, 21), "123 black people lane", 2) 
-
-cursor.execute(insert, data)
-'''
-
-'''
-insert_stmt = (
-  "INSERT INTO employees (emp_no, first_name, last_name, hire_date) "
-  "VALUES (%s, %s, %s, %s)"
-)
-data = (2, 'Jane', 'Doe', datetime.date(2012, 3, 23))
-cursor.execute(insert_stmt, data)
-
-select_stmt = "SELECT * FROM employees WHERE emp_no = %(emp_no)s"
-cursor.execute(select_stmt, { 'emp_no': 2 })
-'''
-
-
 QUIT = 'q'
 
 def clearScreen():
@@ -35,7 +15,15 @@ def update_department_employee_numbers():
             cursor.execute(f"UPDATE DEPARTMENT SET Num_Employees={numEmps} WHERE Number={i}")
 
 def add_employee():
-    print("Adding an employee! Make sure to welcome them to the team!\n\nPlease enter the following information.\n")
+    clearScreen()
+    print("----Adding Employee----\n")
+    print("Are you sure you want to add an employee?")
+    userInput = input("(y/n): ")
+    if userInput != 'y':
+        return
+    clearScreen()
+    print("----Adding Employee----\n")
+    print("Enter the new employees information below\n")
     # asking for user input to input an employee
     First_Name = input("First Name: ")
     Last_Name = input("Last Name: ")
@@ -57,27 +45,42 @@ def add_employee():
         print(depNumber[0], ":", depName)
         print()
 
-    print("Where will", First_Name, Last_Name, "be working? (Department Number)")
+    print("Where will", First_Name, Last_Name, "be working? (Department Number)\n")
     # getting employee department number
     Dep_Num = input("Department Number: ")
-     
-    # get all of the used IDs in the data base already
-    cursor.execute("SELECT ID FROM EMPLOYEE")
-    Ids = cursor.fetchall()
-    Ids = [i[0] for i in Ids]
 
-    # generate a new id that is not used
-    ID = random.randint(111111, 999999)
-    while ID in Ids:
+    clearScreen()
+    print("----Adding Employee----\n")
+    print("Is the following information correct?\n")
+    print("First Name:", First_Name)
+    print("Last Name:", Last_Name)
+    print("Date of Birth:", DOB)
+    print("Address:", Address)
+    print("Department Number:", Dep_Num)
+    validation = input("\n(y/n): ")
+    if validation != 'y':
+        add_employee()
+    else: 
+        # get all of the used IDs in the data base already
+        cursor.execute("SELECT ID FROM EMPLOYEE")
+        Ids = cursor.fetchall()
+        Ids = [i[0] for i in Ids]
+
+        # generate a new id that is not used
         ID = random.randint(111111, 999999)
+        while ID in Ids:
+            ID = random.randint(111111, 999999)
 
-    # adding new employee to the data base
-    insertStatment = "INSERT INTO EMPLOYEE(ID, First_Name, Last_Name, DOB, Address, Dep_Num) VALUES(%s, %s, %s, %s, %s, %s)"
-    data = (ID, First_Name, Last_Name, DOB, Address, Dep_Num)
-    cursor.execute(insertStatment, data)
-    print(First_Name, Last_Name, "added")
-    # incrementing department number employees of this employee by one
-    cursor.execute(f"UPDATE DEPARTMENT SET Num_Employees=Num_Employees-1  WHERE Number={Dep_Num}")
+        # adding new employee to the data base
+        insertStatment = "INSERT INTO EMPLOYEE(ID, First_Name, Last_Name, DOB, Address, Dep_Num) VALUES(%s, %s, %s, %s, %s, %s)"
+        data = (ID, First_Name, Last_Name, DOB, Address, Dep_Num)
+        cursor.execute(insertStatment, data)
+        print(First_Name, Last_Name, "added")
+        # incrementing department number employees of this employee by one
+        cursor.execute(f"UPDATE DEPARTMENT SET Num_Employees=Num_Employees-1  WHERE Number={Dep_Num}")
+
+        view_employees(ID)
+        input("Press ENTER to continue")
 
 def remove_employee(ID):
     # get all of the employee ids
@@ -130,9 +133,17 @@ def get_employee_id(fname, lname):
     except Exception as e:
         print(f"{fname} {lname} is an invalid name")
 
-def view_employees():
-    cursor.execute("select * from EMPLOYEE")
-    employees = cursor.fetchall()
+def view_employees(ID=-1):
+    clearScreen()
+
+    print("----Employees---\n")
+    if ID != -1:
+        cursor.execute(f"select * from EMPLOYEE where ID={ID}")
+        employees = cursor.fetchall()
+
+    else:
+        cursor.execute("select * from EMPLOYEE")
+        employees = cursor.fetchall()
 
     print("----------------------------------------------------------------------------------------------------------------------")
     print("|     ID     |   First Name  |   Last Name   | Hours Worked |      DOB      |        Address        | Department Num |")
@@ -225,7 +236,7 @@ def insert_item():
     item_id = cursor.fetchone()[0] + 1
 
     
-
+    clearScreen()
     #Welcome message for inserting intems
     print("----Insert Item into Inventory----\n")
     prompt = input("press ENTER to continue or q to quit ")
@@ -543,7 +554,7 @@ def vendor_menu():
             input("\nPress ENTER to continue")
 
 def print_welcome():
-    displayImage = "\n\t██████╗░███████╗██╗░██████╗  ░██████╗░██████╗░░█████╗░░█████╗░███████╗██████╗░██╗░░░██╗\n\t██╔══██╗██╔════╝╚█║██╔════╝  ██╔════╝░██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗╚██╗░██╔╝\n\t██║░░██║█████╗░░░╚╝╚█████╗░  ██║░░██╗░██████╔╝██║░░██║██║░░╚═╝█████╗░░██████╔╝░╚████╔╝░\n\t██║░░██║██╔══╝░░░░░░╚═══██╗  ██║░░╚██╗██╔══██╗██║░░██║██║░░██╗██╔══╝░░██╔══██╗░░╚██╔╝░░\n\t██████╔╝███████╗░░░██████╔╝  ╚██████╔╝██║░░██║╚█████╔╝╚█████╔╝███████╗██║░░██║░░░██║░░░\n\t╚═════╝░╚══════╝░░░╚═════╝░  ░╚═════╝░╚═╝░░╚═╝░╚════╝░░╚════╝░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░\n\n"
+    displayImage = "\n\n\n\n\t██████╗░███████╗██╗░██████╗  ░██████╗░██████╗░░█████╗░░█████╗░███████╗██████╗░██╗░░░██╗\n\t██╔══██╗██╔════╝╚█║██╔════╝  ██╔════╝░██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗╚██╗░██╔╝\n\t██║░░██║█████╗░░░╚╝╚█████╗░  ██║░░██╗░██████╔╝██║░░██║██║░░╚═╝█████╗░░██████╔╝░╚████╔╝░\n\t██║░░██║██╔══╝░░░░░░╚═══██╗  ██║░░╚██╗██╔══██╗██║░░██║██║░░██╗██╔══╝░░██╔══██╗░░╚██╔╝░░\n\t██████╔╝███████╗░░░██████╔╝  ╚██████╔╝██║░░██║╚█████╔╝╚█████╔╝███████╗██║░░██║░░░██║░░░\n\t╚═════╝░╚══════╝░░░╚═════╝░  ░╚═════╝░╚═╝░░╚═╝░╚════╝░░╚════╝░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░\n\n\n\n\n"
 
     print(displayImage)
 
@@ -606,16 +617,59 @@ def get_transaction_report():
     print("\n\t\t\tProfit vs Time (Weekly)\n")
 
     input("press ENTER to continue")
-    return # just for you daniel
+    return # just for you daniel (D)
 
 def main():
-    clearScreen()
+    run = True
+    while run:
+        clearScreen()
 
-    # [('DEPARTMENT',), ('EMERGENCY_CONTACT',), ('EMPLOYEE',), ('ITEM',), ('PRODUCTS',), ('SOLD',), ('TRANSACTION',), ('VENDOR',)]
+        print_welcome()
 
-    get_transaction_report()
-    
-    
+        print("What would you like to do?\n")
+        print("0: Add Employee")
+        print("1: Remove Employee")
+        print("2: Get Employee ID")
+        print("3: View Employees")
+        print("4: Insert Items")
+        print("5: Delete Item")
+        print("6: Modify Item")
+        print("7: View Items")
+        print("8: Vendor Menu")
+        print("9: Weekly Sales Report")
+        print(f"{QUIT}: Quit")
+        
+        possibleInputs = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', QUIT, '69']
+
+        userInput = input("\nMenu Selection: ")
+        while userInput not in possibleInputs:
+            print("Invalid Input")
+            userInput = input("Menu Selection: ")
+
+        if userInput == '0':
+            add_employee()
+        elif userInput == '1':
+            pass
+        elif userInput == '2':
+            pass
+        elif userInput == '3':
+            view_employees()
+        elif userInput == '4':
+            insert_item()
+        elif userInput == '5':
+            pass
+        elif userInput == '6':
+            pass
+        elif userInput == '7':
+            pass
+        elif userInput == '8':
+            pass
+        elif userInput == '9':
+            get_transaction_report()
+        elif userInput == QUIT:
+            print("\nHave a good day!!")
+            run = False
+
 if __name__ == "__main__":
     # initialize connection to data base
     mydb = mysql.connector.connect(
