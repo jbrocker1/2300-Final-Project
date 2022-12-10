@@ -13,7 +13,7 @@ import time
 QUIT = 'q'
 
 def clearScreen():
-    print("\033[H\033[J")
+    print("\033[H\033[J", flush=True)
 
 def update_department_employee_numbers():
     for i in range(1, 6):
@@ -236,6 +236,8 @@ def view_items(item_id = -1):
         cursor.execute(f"select * from ITEM where Item_ID = {item_id}")
         items = cursor.fetchall()
 
+    clearScreen()
+    print("----Items----\n")
     print("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------")
     print("|  ID  |      Name     |      Brand     |  Location  |   Price ($)  |  Date Aquired  | Tax% | Stock Amount | Profit Per Unit ($) | Department Number | Vendor Company |")
     print("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------")
@@ -579,14 +581,13 @@ def simulate_transactions():
     transDate = datetime.date.today()
     timeIterate = datetime.timedelta(days=1)
 
-    for i in range(7):
-        transDate -= timeIterate
+    transDate -= timeIterate
 
     print(transDate)
 
     departmentProfit = [0, 0, 0, 0, 0]
     
-    for transNum in range(110, 200):
+    for transNum in range(200, 230):
         print("working on", transNum)
         # transaction item information
         numItems = random.randint(3, 30)
@@ -652,8 +653,15 @@ def vendor_menu():
     vendorCompanys = cursor.fetchall()
     vendorCompanys = [vc[0] for vc in vendorCompanys]
 
+    clearScreen()
+    print("----Vendor Menu----")
+    cont = input("\nAre you sure you want to view the vendor menu? (y/n): ")
+    if cont != 'y':
+        return
+    clearScreen()
+    print("----Vendor Menu----")
     # printing prompts along wth list of vendors 
-    print("Please select a vendor\n")
+    print("\nPlease select a vendor\n")
 
     for vCI in range(len(vendorCompanys)):
         print(vCI, ": ",  vendorCompanys[vCI], sep="")
@@ -679,6 +687,7 @@ def vendor_menu():
 
         # clear screen and prompt for various actions they can do
         clearScreen()
+        print("----Vendor Menu----\n")
         print("What would you like to know about {}?\n".format(vendorName))
         print("0: Operational Hours")
         print("1: Aisle Location")
@@ -861,6 +870,7 @@ def main():
             modify_item()
         elif userInput == '7':
             view_items()
+            input("Press ENTER to continue")
         elif userInput == '8':
             vendor_menu()
         elif userInput == '9':
@@ -889,7 +899,7 @@ if __name__ == "__main__":
 
     # closing and saving connections and data
     cursor.close()
-    mydb.commit()
+     mydb.commit()
     mydb.close()
 
 
