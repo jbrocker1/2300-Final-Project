@@ -581,13 +581,12 @@ def simulate_transactions():
     transDate = datetime.date.today()
     timeIterate = datetime.timedelta(days=1)
 
-    transDate -= timeIterate
-
+    transDate += (2 * timeIterate)
     print(transDate)
 
     departmentProfit = [0, 0, 0, 0, 0]
     
-    for transNum in range(200, 230):
+    for transNum in range(230, 300):
         print("working on", transNum)
         # transaction item information
         numItems = random.randint(3, 30)
@@ -899,7 +898,7 @@ if __name__ == "__main__":
 
     # closing and saving connections and data
     cursor.close()
-    # mydb.commit()
+    mydb.commit()
     mydb.close()
 
 
