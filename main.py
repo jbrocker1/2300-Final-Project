@@ -798,7 +798,7 @@ def get_transaction_report():
 
     print("\nHere are the following statistics for all transasctions over the last week\n")
     print("Minimum Total Day Profit: ${}".format(round(minDayProfit, 2)))
-    print("Maximun Total Day Profit: ${}".format(round(maxDayProfit, 2)))
+    print("Maximum Total Day Profit: ${}".format(round(maxDayProfit, 2)))
     print("Average Day Profit: ${}".format(round(averageDayProfit, 2)))
     print()
 
