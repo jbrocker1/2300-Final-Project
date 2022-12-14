@@ -37,19 +37,12 @@ def add_employee():
     DOB = input("Date of Birth (YYYY-MM-DD): ")
     Address = input("Address: ")
     
-    # giving list of department names and numbers to the user
-    cursor.execute("select Number from DEPARTMENT")
-    departmentNumbers = cursor.fetchall()
-    departmentNames = []
-    for depNumb in departmentNumbers:
-        cursor.execute("select Name from DEPARTMENT where Number={}".format(depNumb[0]))
-        departmentNames.append(cursor.fetchall()[0][0])
-
-    print()
-    for i in range(len(departmentNumbers)):
-        depNumber = departmentNumbers[i]
-        depName = departmentNames[i]
-        print(depNumber[0], ":", depName)
+    # giving list of department
+    print("1: Meat Department")
+    print("2: Bakery Department")
+    print("3: Seafood Department")
+    print("4: Deli Department")
+    print("5: Grocery Department")
 
     print("\nWhere will", First_Name, Last_Name, "be working? (Department Number)\n")
     # getting employee department number
