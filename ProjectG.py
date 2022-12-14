@@ -5,6 +5,7 @@ try:
     import mysql.connector
 except ImportError:
     os.system("pip install mysql-connector-python")
+    import mysql.connector
 
 import random
 import datetime
